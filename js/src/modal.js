@@ -1,6 +1,6 @@
 /**
  * --------------------------------------------------------------------------
- * Bootstrap (v4.5.0): modal.js
+ * Bootstrap (v4.5.2): modal.js
  * Licensed under MIT (https://github.com/twbs/bootstrap/blob/main/LICENSE)
  * --------------------------------------------------------------------------
  */
@@ -15,7 +15,7 @@ import Util from './util'
  */
 
 const NAME               = 'modal'
-const VERSION            = '4.5.0'
+const VERSION            = '4.5.2'
 const DATA_KEY           = 'bs.modal'
 const EVENT_KEY          = `.${DATA_KEY}`
 const DATA_API_KEY       = '.data-api'
@@ -238,12 +238,25 @@ class Modal {
         return
       }
 
+      const isModalOverflowing = this._element.scrollHeight > document.documentElement.clientHeight
+
+      if (!isModalOverflowing) {
+        this._element.style.overflowY = 'hidden'
+      }
+
       this._element.classList.add(CLASS_NAME_STATIC)
 
-      const modalTransitionDuration = Util.getTransitionDurationFromElement(this._element)
+      const modalTransitionDuration = Util.getTransitionDurationFromElement(this._dialog)
+      $(this._element).off(Util.TRANSITION_END)
 
       $(this._element).one(Util.TRANSITION_END, () => {
         this._element.classList.remove(CLASS_NAME_STATIC)
+        if (!isModalOverflowing) {
+          $(this._element).one(Util.TRANSITION_END, () => {
+            this._element.style.overflowY = ''
+          })
+            .emulateTransitionEnd(this._element, modalTransitionDuration)
+        }
       })
         .emulateTransitionEnd(modalTransitionDuration)
       this._element.focus()
